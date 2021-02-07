@@ -17,7 +17,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 	List<User> findAllByRoleId(int id);
 	
 	@Query(value="SELECT * FROM user WHERE role_id = ?1 AND id = ?2", nativeQuery=true)
-	User findByRoleId(Integer roleId , Integer userId);
+	User findByRoleIdAndUserId(Integer roleId , Integer userId);
 	
 	@Query(value="SELECT * FROM user WHERE email = ?1", nativeQuery=true)
 	User findByEmail(String email);

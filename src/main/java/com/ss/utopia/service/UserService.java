@@ -30,7 +30,7 @@ public class UserService {
 	}
 
 	public User findByRoleIdAndUserId(Integer roleId, Integer userId) {
-		User user = (User) userRepository.findByRoleId(roleId, userId);
+		User user = (User) userRepository.findByRoleIdAndUserId(roleId, userId);
 		return user != null ? user : null;
 	}
 
