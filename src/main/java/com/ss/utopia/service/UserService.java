@@ -7,36 +7,49 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ss.utopia.model.User;
+import com.ss.utopia.model.UserRole;
 import com.ss.utopia.repository.UserRepository;
-
+import com.ss.utopia.repository.UserRoleRepository;
 
 @Service
 public class UserService {
-	
+
 	@Autowired
 	UserRepository userRepository;
-	
-	public List<User> allUsers(){
+
+	@Autowired
+	UserRoleRepository userRoleRepository;
+
+	public List<User> findAllUsers() {
 		return (List<User>) userRepository.findAll();
 	}
 
-	public void saveUser(User user) {
-		userRepository.save(user);
+	public List<User> findAllByRole(Integer id) {
+		return userRepository.findAllByRoleId(id);
 	}
-	
-	public User findById(Integer id) {
-		Optional<User> user = userRepository.findById(id);
-		if(user.isPresent()) {
-			return user.get();
-		} else return null;
+
+	public User findByRoleIdAndUserId(Integer roleId, Integer userId) {
+		User user = (User) userRepository.findByRoleId(roleId, userId);
+		return user != null ? user : null;
 	}
-	
-	public boolean DeteleUser(Integer id) {
-		Optional<User> user = userRepository.findById(id);
-		if(!user.isPresent()) {
-			return false;
+
+	public User saveUser(UserRole userRole, User user) {
+		User verifyIfUserExist = userRepository.findByEmail(user.getEmail());
+		if (verifyIfUserExist == null) {
+			user.setUserRole(userRole);
+			userRepository.save(user);
+			return user;
 		}
+		return null;
+
+	}
+
+	public User update(User user) {
+		userRepository.save(user);
+		return user;
+	}
+
+	public void deteleUser(Integer id) {
 		userRepository.deleteById(id);
-		return true;
 	}
 }

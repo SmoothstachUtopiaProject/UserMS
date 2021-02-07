@@ -42,11 +42,20 @@ public class User {
 	public User() {
 	}
 
-	public User(int id, UserRole userRole, String firstName, String lastName, String email, String password,
+	public User(UserRole userRole, String firstName, String lastName, String email, String password,
 			String phone) {
 		super();
-		this.id = id;
 		this.userRole = userRole;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.email = email;
+		this.password = password;
+		this.phone = phone;
+	}
+	
+	public User(String firstName, String lastName, String email, String password,
+			String phone) {
+		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;

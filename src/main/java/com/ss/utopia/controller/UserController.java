@@ -1,12 +1,16 @@
 package com.ss.utopia.controller;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,46 +20,68 @@ import com.ss.utopia.model.UserRole;
 import com.ss.utopia.service.UserRoleService;
 import com.ss.utopia.service.UserService;
 
-
 @RestController
 @RequestMapping(value = "/users")
 public class UserController {
 
 	@Autowired
 	UserService userService;
+
 	@Autowired
 	UserRoleService userRoleService;
 
 	@GetMapping
-	public ResponseEntity<List<User>> findAllUsers() {
-		List<User> userList = userService.allUsers();
+	public ResponseEntity<List<User>> findAll() {
+		List<User> userList = userService.findAllUsers();
+		return !userList.isEmpty() ? new ResponseEntity<>(userList, HttpStatus.OK)
+				: new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+	}
 
-		if (userList.isEmpty()) {
-			return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-		} 
-		return new ResponseEntity<>(userList, HttpStatus.OK);
+	@GetMapping("{roleId}")
+	public ResponseEntity<List<User>> findAllByRoleId(@PathVariable Integer roleId) {
+		List<User> userList = userService.findAllByRole(roleId);
+		return !userList.isEmpty() ? new ResponseEntity<>(userList, HttpStatus.OK)
+				: new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+	}
+
+	@PostMapping(path = "{roleId}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE }, 
+			produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+	public ResponseEntity<Void> inserUser(@PathVariable Integer roleId, @RequestBody User user) {
+		UserRole userRole = userRoleService.findUserRoleById(roleId);
+		if (userRole == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		User newUser = userService.saveUser(userRole, user);
+		return newUser != null ? new ResponseEntity<>(HttpStatus.CREATED) : new ResponseEntity<>(HttpStatus.CONFLICT);
+	}
+
+	@GetMapping("{roleId}/{userId}")
+	public ResponseEntity<User> findByRoleId(@PathVariable Integer roleId, @PathVariable Integer userId) {
+		User user = userService.findByRoleIdAndUserId(roleId, userId);
+		return user != null ? new ResponseEntity<>(user, HttpStatus.OK)
+				: new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
 	
-	@GetMapping("{id}")
-	public ResponseEntity<User> findById(@PathVariable Integer id){
-		User user = userService.findById(id);
-		if(user == null) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	@PutMapping("{roleId}/{userId}")
+	public ResponseEntity<User> update(@PathVariable Integer roleId, @PathVariable Integer userId, @RequestBody User user) {
+		User verifyUser = userService.findByRoleIdAndUserId(roleId, userId);
+		if (verifyUser == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		return ResponseEntity.status(HttpStatus.OK).body(user);
+		User updateduser = userService.update(user);
+		return updateduser != null ? new ResponseEntity<>(HttpStatus.CREATED) : new ResponseEntity<>(HttpStatus.CONFLICT);
+	}
+	
+	@DeleteMapping("{roleId}/{userId}")
+	public ResponseEntity<Void> delete(@PathVariable Integer roleId, @PathVariable Integer userId){
+		User verifyUser = userService.findByRoleIdAndUserId(roleId, userId);
+		if (verifyUser == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		userService.deteleUser(userId);
+		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		
 	}
-	
-	
-
-	@PostMapping("/new")
-	public ResponseEntity<String> inserUser(@RequestBody User user) throws NullPointerException {
-		UserRole ur = userRoleService.findUserRoleById(1);
-		user.setUserRole(ur);
-		userService.saveUser(user);
-		return new ResponseEntity<String>("done", HttpStatus.OK);
-	}
-	
-	
 
 }

@@ -20,11 +20,8 @@ public class UserRoleService {
 	@Autowired
 	UserRoleRepository userRoleRepository;
 
-	public UserRole findUserRoleById(int id) {
+	public UserRole findUserRoleById(Integer id) {
 		Optional<UserRole> userRole = userRoleRepository.findById(id);
-		if(userRole.isPresent()) {
-			return userRole.get();
-		} else return null;
+		return userRole.isPresent() ?  userRole.get() : null;
 	}
-
 }
