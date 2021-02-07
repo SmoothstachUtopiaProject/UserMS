@@ -1,5 +1,6 @@
 package com.ss.utopia.controller;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +65,7 @@ public class UserController {
 	}
 	
 	@PutMapping("{roleId}/{userId}")
-	public ResponseEntity<User> update(@PathVariable Integer roleId, @PathVariable Integer userId, @RequestBody User user) {
+	public ResponseEntity<User> update(@PathVariable Integer roleId, @PathVariable Integer userId, @RequestBody User user) throws SQLException {
 		User verifyUser = userService.findByRoleIdAndUserId(roleId, userId);
 		if (verifyUser == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -74,7 +75,7 @@ public class UserController {
 	}
 	
 	@DeleteMapping("{roleId}/{userId}")
-	public ResponseEntity<Void> delete(@PathVariable Integer roleId, @PathVariable Integer userId){
+	public ResponseEntity<Void> delete(@PathVariable Integer roleId, @PathVariable Integer userId) throws SQLException{
 		User verifyUser = userService.findByRoleIdAndUserId(roleId, userId);
 		if (verifyUser == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);

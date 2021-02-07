@@ -1,5 +1,6 @@
 package com.ss.utopia.service;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,12 +45,12 @@ public class UserService {
 
 	}
 
-	public User update(User user) {
+	public User update(User user) throws SQLException {
 		userRepository.save(user);
 		return user;
 	}
 
-	public void deteleUser(Integer id) {
-		userRepository.deleteById(id);
+	public void deteleUser(Integer id) throws SQLException {
+		userRepository.deleteByUserId(id);
 	}
 }
