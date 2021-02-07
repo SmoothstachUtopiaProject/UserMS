@@ -22,7 +22,7 @@ import com.ss.utopia.service.UserRoleService;
 import com.ss.utopia.service.UserService;
 
 @RestController
-@RequestMapping(value = "/users")
+@RequestMapping(value = "/users", produces = { "application/json", "application/xml", "text/xml"}, consumes = MediaType.ALL_VALUE)
 public class UserController {
 
 	@Autowired
@@ -31,7 +31,7 @@ public class UserController {
 	@Autowired
 	UserRoleService userRoleService;
 
-	@GetMapping
+	@GetMapping()
 	public ResponseEntity<List<User>> findAll() {
 		List<User> userList = userService.findAllUsers();
 		return !userList.isEmpty() ? new ResponseEntity<>(userList, HttpStatus.OK)
@@ -45,8 +45,7 @@ public class UserController {
 				: new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
 
-	@PostMapping(path = "{roleId}", consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE }, 
-			produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+	@PostMapping(path = "{roleId}")
 	public ResponseEntity<Void> inserUser(@PathVariable Integer roleId, @RequestBody User user) {
 		UserRole userRole = userRoleService.findUserRoleById(roleId);
 		if (userRole == null) {
@@ -63,25 +62,27 @@ public class UserController {
 		return user != null ? new ResponseEntity<>(user, HttpStatus.OK)
 				: new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
-	
-	@PutMapping("{roleId}/{userId}")
-	public ResponseEntity<User> update(@PathVariable Integer roleId, @PathVariable Integer userId, @RequestBody User user) throws SQLException {
+
+	@PutMapping(path = "{roleId}/{userId}")
+	public ResponseEntity<User> update(@PathVariable Integer roleId, @PathVariable Integer userId,
+			@RequestBody User user) throws SQLException {
 		User verifyUser = userService.findByRoleIdAndUserId(roleId, userId);
 		if (verifyUser == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		User updateduser = userService.update(user);
-		return updateduser != null ? new ResponseEntity<>(HttpStatus.CREATED) : new ResponseEntity<>(HttpStatus.CONFLICT);
+		return updateduser != null ? new ResponseEntity<>(HttpStatus.CREATED)
+				: new ResponseEntity<>(HttpStatus.CONFLICT);
 	}
-	
-	@DeleteMapping("{roleId}/{userId}")
-	public ResponseEntity<Void> delete(@PathVariable Integer roleId, @PathVariable Integer userId) throws SQLException{
+
+	@DeleteMapping(path = "{roleId}/{userId}")
+	public ResponseEntity<Void> delete(@PathVariable Integer roleId, @PathVariable Integer userId) throws SQLException {
 		User verifyUser = userService.findByRoleIdAndUserId(roleId, userId);
 		if (verifyUser == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		userService.deteleUser(userId);
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
-		
+
 	}
 }
