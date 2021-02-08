@@ -45,8 +45,8 @@ public class UserController {
 				: new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
 
-	@PostMapping(path = "{roleId}")
-	public ResponseEntity<Void> inserUser(@PathVariable Integer roleId, @RequestBody User user) {
+	@PostMapping(path = "{roleId}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	public ResponseEntity<Void> insert(@PathVariable Integer roleId, @RequestBody User user) {
 		UserRole userRole = userRoleService.findUserRoleById(roleId);
 		if (userRole == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -57,13 +57,13 @@ public class UserController {
 	}
 
 	@GetMapping("{roleId}/{userId}")
-	public ResponseEntity<User> findByRoleId(@PathVariable Integer roleId, @PathVariable Integer userId) {
+	public ResponseEntity<User> findByRoleIdAndUserId(@PathVariable Integer roleId, @PathVariable Integer userId) {
 		User user = userService.findByRoleIdAndUserId(roleId, userId);
 		return user != null ? new ResponseEntity<>(user, HttpStatus.OK)
 				: new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 	}
 
-	@PutMapping(path = "{roleId}/{userId}")
+	@PutMapping(path = "{roleId}/{userId}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<User> update(@PathVariable Integer roleId, @PathVariable Integer userId,
 			@RequestBody User user) throws SQLException {
 		User verifyUser = userService.findByRoleIdAndUserId(roleId, userId);
@@ -71,7 +71,7 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		User updateduser = userService.update(user);
-		return updateduser != null ? new ResponseEntity<>(HttpStatus.CREATED)
+		return updateduser != null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
 				: new ResponseEntity<>(HttpStatus.CONFLICT);
 	}
 
@@ -82,7 +82,7 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 		userService.deteleUser(userId);
-		return new ResponseEntity<>(HttpStatus.ACCEPTED);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
 	}
 }
