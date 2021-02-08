@@ -22,7 +22,7 @@ import com.ss.utopia.service.UserRoleService;
 import com.ss.utopia.service.UserService;
 
 @RestController
-@RequestMapping(value = "/users", produces = { "application/json", "application/xml", "text/xml"}, consumes = MediaType.ALL_VALUE)
+@RequestMapping(value = "/users")
 public class UserController {
 
 	@Autowired

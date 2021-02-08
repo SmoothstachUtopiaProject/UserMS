@@ -1,5 +1,6 @@
 package com.ss.utopia.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +18,7 @@ import com.ss.utopia.model.UserRole;
 import com.ss.utopia.repository.UserRepository;
 
 @SpringBootTest
-public class UserServiceTest {
+public class UserServiceEvaluation {
 
 	
 	private User user;
@@ -28,7 +29,6 @@ public class UserServiceTest {
 	@Mock
 	private UserRepository userRepository;
 	
-	
 	@InjectMocks
 	private UserService userService;
 	
@@ -37,10 +37,22 @@ public class UserServiceTest {
 		userRole = new UserRole(2, "agent");
 		user = new User(userRole, "Test", "jUnit", "jUnit@test.com", "0000000000", "8888888888");
 		uList.add(user);
+		
+		when(userRepository.findAllByRoleId(2)).thenReturn(uList);
+		when(userRepository.findAllByRoleId(1)).thenReturn(null);
+		
 		when(userRepository.findByRoleIdAndUserId(2, 17)).thenReturn(user);
 		when(userRepository.findByRoleIdAndUserId(0, 17)).thenReturn(null);
 		
-		when(userRepository.findAllByRoleId(2)).thenReturn(uList);
+		when(userRepository.findByEmail("jUnit@test.com")).thenReturn(user);
+		when(userRepository.findByEmail("jUnitFailure@test.com")).thenReturn(null);		
+		
+	}
+	
+	@Test
+	public void testDeleteByUserIdSuccess() {
+		userRepository.deleteByUserId(user.getId());
+		assertThat(userRepository.count()).isEqualTo(0);
 	}
 	
 	@Test
@@ -54,14 +66,23 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void testfindAllByRoleIdSuccess() {
+	public void testFindAllByRoleIdSuccess() {
 		assertEquals(userRepository.findAllByRoleId(2), uList);
 	}
 	
+	@Test
+	public void testFindAllByRoleIdFailure() {
+		assertEquals(userRepository.findAllByRoleId(1), null);
+	}
 	
+	@Test
+	public void testFindByEmailSuccess() {
+		assertEquals(userRepository.findByEmail("jUnit@test.com"), user);
+	}
 	
-	
-	
-	
+	@Test
+	public void testFindByEmailFailure() {
+		assertEquals(userRepository.findByEmail("jUnitFailure@test.com"), null);
+	}
 	
 }

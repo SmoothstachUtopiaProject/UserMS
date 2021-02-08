@@ -14,7 +14,7 @@ import com.ss.utopia.repository.UserRoleRepository;
 
 
 @SpringBootTest
-public class UserRoleServiceTest {
+public class UserRoleServiceEvaluation {
 	
 	@Mock
 	private UserRole userRole;
