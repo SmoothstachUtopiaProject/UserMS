@@ -1,5 +1,6 @@
 package com.ss.utopia.service;
 
+import java.net.ConnectException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -25,34 +26,58 @@ public class UserService {
 	@Autowired
 	UserRoleService userRoleService;
 
-	public List<User> findAll() throws SQLException {
+	public List<User> findAll() throws ConnectException, SQLException {
 		return userRepository.findAll();
 	}
 
-	public User findByEmail(String email) throws IllegalArgumentException,
-	 SQLException, UserNotFoundException {
+	public User findByEmail(String email) throws ConnectException, 
+		IllegalArgumentException,SQLException, UserNotFoundException {
+
 		String formattedEmail = formatGeneric(email);
-		if(!validateEmail(formattedEmail)) throw new IllegalArgumentException("The email: " + email + " is not valid!");
+		if(!validateEmail(formattedEmail)) throw new IllegalArgumentException("The email: \"" + email + "\" is not valid!");
 
 		Optional<User> optionalUser = userRepository.findByEmail(formattedEmail);
-		if(!optionalUser.isPresent()) throw new UserNotFoundException("No user with email: " + email + " exist!");
+		if(!optionalUser.isPresent()) throw new UserNotFoundException("No user with email: \"" + email + "\" exist!");
 		return optionalUser.get();
 	}
 
-	public User findById(Integer id) throws SQLException, UserNotFoundException {
+	public User findById(Integer id) throws ConnectException, IllegalArgumentException,
+		SQLException, UserNotFoundException {
+
 		Optional<User> optionalUser = userRepository.findById(id);
-		if(!optionalUser.isPresent()) throw new UserNotFoundException("No user with ID: " + id + " exist!");
+		if(!optionalUser.isPresent()) throw new UserNotFoundException("No user with ID: \"" + id + "\" exist!");
 		return optionalUser.get();
 	}
 
-	public List<User> findByRoleId(Integer userRoleId) throws SQLException, UserRoleNotFoundException {
+	public User findByPhone(String phone) throws ConnectException, 
+	IllegalArgumentException,SQLException, UserNotFoundException {
+
+	String formattedPhone = formatPhone(phone);
+	if(!validatePhone(formattedPhone)) throw new IllegalArgumentException("The phone: \"" + phone + "\" is not valid!");
+
+	Optional<User> optionalUser = userRepository.findByPhone(formattedPhone);
+	if(!optionalUser.isPresent()) throw new UserNotFoundException("No user with phone: \"" + phone + "\" exist!");
+	return optionalUser.get();
+}
+
+	public List<User> findByRoleId(Integer userRoleId) throws ConnectException,
+		IllegalArgumentException, SQLException, UserRoleNotFoundException {
+
 		UserRole role = userRoleService.findById(userRoleId);
+		return userRepository.findByRoleId(role.getId());
+	}
+
+	public List<User> findByRoleName(String userRoleName) throws ConnectException,
+	IllegalArgumentException, SQLException, UserRoleNotFoundException {
+
+		UserRole role = userRoleService.findByName(userRoleName);
 		return userRepository.findByRoleId(role.getId());
 	}
 
 	public User insert(Integer userRoleId, String firstName,
 		String lastName, String email, String password, String phone) 
-		throws IllegalArgumentException, SQLException, UserAlreadyExistsException {
+		throws ConnectException, IllegalArgumentException, SQLException, 
+		UserAlreadyExistsException {
 		
 		String formattedFirstName = formatGeneric(firstName);
 		String formattedLastName = formatGeneric(lastName);
@@ -61,9 +86,9 @@ public class UserService {
 
 		if(!validateName(formattedFirstName)) throw new IllegalArgumentException("A name cannot exceed 255 characters!");
 		if(!validateName(formattedLastName)) throw new IllegalArgumentException("A name cannot exceed 255 characters!");
-		if(!validateEmail(formattedEmail)) throw new IllegalArgumentException("The email: " + email + " is not valid!");
+		if(!validateEmail(formattedEmail)) throw new IllegalArgumentException("The email: \"" + email + "\" is not valid!");
 		if(!validateName(password)) throw new IllegalArgumentException("A password cannot exceed 255 characters!");
-		if(!validatePhone(formattedPhone)) throw new IllegalArgumentException("The phone number: " + phone + " is not valid!");
+		if(!validatePhone(formattedPhone)) throw new IllegalArgumentException("The phone number: \"" + phone + "\" is not valid!");
 
 		try {
 			Optional<User> optionalUser = userRepository.findByEmail(formattedEmail);
@@ -77,7 +102,8 @@ public class UserService {
 
 	public User update(Integer id, Integer userRoleId, String firstName,
 		String lastName, String email, String password, String phone) 
-		throws IllegalArgumentException, SQLException, UserNotFoundException {
+		throws ConnectException, IllegalArgumentException, SQLException, 
+		UserNotFoundException {
 		
 		String formattedFirstName = formatGeneric(firstName);
 		String formattedLastName = formatGeneric(lastName);
@@ -91,19 +117,22 @@ public class UserService {
 		if(!validatePhone(formattedPhone)) throw new IllegalArgumentException("The phone number: " + phone + " is not valid!");
 
 		try {
-			User user = findById(id);
+			findById(id);
 			UserRole userRole = userRoleService.findById(userRoleId);
-			return userRepository.save(new User(user.getId(), userRole, formattedFirstName, formattedLastName, formattedEmail, password, formattedPhone));
+			return userRepository.save(new User(id, userRole, formattedFirstName, formattedLastName, formattedEmail, password, formattedPhone));
 		} catch(UserRoleNotFoundException err) {
 			throw new IllegalArgumentException(err.getMessage());
 		}
 	}
 
-	public void delete(Integer id) throws UserNotFoundException, SQLException {
+	public void delete(Integer id) throws ConnectException, IllegalArgumentException, 
+	UserNotFoundException, SQLException {
+
 		try {
+			findById(id);
 			userRepository.deleteById(id);
 		} catch(IllegalArgumentException err) {
-			throw new UserNotFoundException("No user with ID: " + id + " exist!");
+			throw new UserNotFoundException("No user with ID: \"" + id + "\" exist!");
 		}
 	}
 
@@ -118,7 +147,8 @@ public class UserService {
 	private Boolean validateEmail(String email) {
 		Pattern pattern = Pattern.compile("^(.+)@(.+)$");
 		Matcher matcher = pattern.matcher(email);
-		return matcher.matches() && 
+		return email != null &&
+		matcher.matches() && 
 		email.length() < 256 && 
 		!email.isEmpty();
 	}
@@ -136,7 +166,8 @@ public class UserService {
 	}
 
 	private Boolean validatePhone(String phone) {
-		return phone.length() < 46 &&
+		return phone != null &&
+		phone.length() < 46 &&
 		phone.replaceAll("[^0-9#]", "").length() == phone.length() &&
 		!phone.isEmpty();
 	}

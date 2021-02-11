@@ -24,7 +24,13 @@ public class UserRoleService {
 
 	public UserRole findById(Integer id) throws SQLException, UserRoleNotFoundException {
 		Optional<UserRole> optionalUserRole = userRoleRepository.findById(id);
-		if(!optionalUserRole.isPresent()) throw new UserRoleNotFoundException("No UserRole with ID: " + id + " exist!");
+		if(!optionalUserRole.isPresent()) throw new UserRoleNotFoundException("No UserRole with ID: \"" + id + "\" exist!");
+		return optionalUserRole.get();
+	}
+
+	public UserRole findByName(String name) throws SQLException, UserRoleNotFoundException {
+		Optional<UserRole> optionalUserRole = userRoleRepository.findByName(name);
+		if(!optionalUserRole.isPresent()) throw new UserRoleNotFoundException("No UserRole with name: \"" + name + "\" exist!");
 		return optionalUserRole.get();
 	}
 }
