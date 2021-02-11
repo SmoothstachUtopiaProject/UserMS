@@ -1,5 +1,6 @@
 package com.ss.utopia;
 
+import java.net.ConnectException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -38,65 +39,90 @@ public class UserController {
 	UserRoleService userRoleService;
 
 	@GetMapping()
-	public ResponseEntity<Object> findAll() {
-		try{
-			List<User> userList = userService.findAll();
-			return !userList.isEmpty() 
-			? new ResponseEntity<>(userList, HttpStatus.OK)
-			: new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+	public ResponseEntity<Object> findAll() 
+	throws ConnectException, SQLException {
 
-		} catch(SQLException err) {
-			return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
-		}
+		List<User> userList = userService.findAll();
+		return !userList.isEmpty() 
+		? new ResponseEntity<>(userList, HttpStatus.OK)
+		: new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
 
-	@GetMapping("{userId}")
-	public ResponseEntity<Object> findById(@PathVariable Integer userId) {
+	@GetMapping("{path}")
+	public ResponseEntity<Object> findById(@PathVariable String path)
+	throws ConnectException, SQLException {
+
 		try {
+			Integer userId = Integer.parseInt(path);
 			User user = userService.findById(userId);
 			return new ResponseEntity<>(user, HttpStatus.OK);
 
-		} catch(IllegalArgumentException err) {
-			return new ResponseEntity<>(err.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch(IllegalArgumentException | NullPointerException err) {
+			return new ResponseEntity<>("Cannot process ID " + err.getMessage()
+			.substring(0, 1).toLowerCase() + err.getMessage()
+			.substring(1, err.getMessage().length()), HttpStatus.BAD_REQUEST);
+			
 		} catch(UserNotFoundException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
-		} catch(SQLException err) {
-			return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
 		}
 	}
 
-	@GetMapping("/email")
-	public ResponseEntity<Object> findByEmail(@RequestBody String email) {
+	@GetMapping("/email/{email}")
+	public ResponseEntity<Object> findByEmail(@PathVariable String email)
+	throws ConnectException, SQLException {
+
 		try {
 			User user = userService.findByEmail(email);
 			return new ResponseEntity<>(user, HttpStatus.OK);
 
-		} catch(IllegalArgumentException err) {
+		} catch( IllegalArgumentException | NullPointerException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch(UserNotFoundException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
-		} catch(SQLException err) {
-			return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
+		}
+	}
+
+	@GetMapping("/phone/{phone}")
+	public ResponseEntity<Object> findByPhone(@PathVariable String phone)
+	throws ConnectException, SQLException {
+
+		try {
+			User user = userService.findByPhone(phone);
+			return new ResponseEntity<>(user, HttpStatus.OK);
+
+		} catch( IllegalArgumentException | NullPointerException err) {
+			return new ResponseEntity<>(err.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch(UserNotFoundException err) {
+			return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
 
 	@GetMapping("/search")
-	public ResponseEntity<Object> findByRoleId(@RequestParam Integer roleId) {
+	public ResponseEntity<Object> findByRole(@RequestParam String role)
+	throws ConnectException, SQLException {
+
 		try{
-			List<User> userList = userService.findByRoleId(roleId);
+			List<User> userList = role.replaceAll("[^0-9-]", "").length() == role.length()
+			? userService.findByRoleId(Integer.parseInt(role))
+			: userService.findByRoleName(role);
 			return !userList.isEmpty() 
 			? new ResponseEntity<>(userList, HttpStatus.OK)
 			: new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 
-		} catch(IllegalArgumentException | UserRoleNotFoundException err) {
-			return new ResponseEntity<>(err.getMessage(), HttpStatus.BAD_REQUEST);
-		} catch(SQLException err) {
-			return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
+		} catch(IllegalArgumentException | NullPointerException err) {
+			return new ResponseEntity<>("Cannot process Role " + err.getMessage()
+			.substring(0, 1).toLowerCase() + err.getMessage()
+			.substring(1, err.getMessage().length()), HttpStatus.BAD_REQUEST);
+
+		} catch(UserRoleNotFoundException err) {
+			return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
 
 	@PostMapping
-	public ResponseEntity<Object> insert(@RequestBody String body) {
+	public ResponseEntity<Object> insert(@RequestBody String body)
+	throws ConnectException, SQLException {
+
 		try {
 			User user = new ObjectMapper().readValue(body, User.class);
 			Integer userRole = Integer.parseInt(body.replaceAll("[^a-zA-Z0-9,]", "").split("userRoleid")[1].split(",")[0]);
@@ -105,19 +131,21 @@ public class UserController {
 			user.getLastName(), user.getEmail(), user.getPassword(), user.getPhone());
 			return new ResponseEntity<>(newUser, HttpStatus.CREATED);
 
-		} catch(ArrayIndexOutOfBoundsException | IllegalArgumentException | 
-			JsonProcessingException | NullPointerException err) {
+		} catch(ArrayIndexOutOfBoundsException | JsonProcessingException | NullPointerException err) {
+			return new ResponseEntity<>("Invalid User formatting!", HttpStatus.BAD_REQUEST);
+		} catch(IllegalArgumentException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch(UserAlreadyExistsException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.CONFLICT);
-		} catch(SQLException err) {
-			return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
 		}
 	}
 
-	@PutMapping("{userId}")
-	public ResponseEntity<Object> update(@PathVariable Integer userId, @RequestBody String body) {
+	@PutMapping("{path}")
+	public ResponseEntity<Object> update(@PathVariable String path, @RequestBody String body) 
+	throws ConnectException, SQLException {
+
 		try {
+			Integer userId = Integer.parseInt(path);
 			User user = new ObjectMapper().readValue(body, User.class);
 			Integer userRole = Integer.parseInt(body.replaceAll("[^a-zA-Z0-9,]", "").split("userRoleid")[1].split(",")[0]);
 
@@ -125,31 +153,45 @@ public class UserController {
 			user.getLastName(), user.getEmail(), user.getPassword(), user.getPhone());
 			return new ResponseEntity<>(newUser, HttpStatus.ACCEPTED);
 
-		} catch(ArrayIndexOutOfBoundsException | IllegalArgumentException | 
-			JsonProcessingException | NullPointerException err) {
-			return new ResponseEntity<>(err.getMessage(), HttpStatus.BAD_REQUEST);
-		} catch(SQLException err) {
-			return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
+		} catch(ArrayIndexOutOfBoundsException | JsonProcessingException  err) {
+			return new ResponseEntity<>("Invalid User formatting!", HttpStatus.BAD_REQUEST);
+		} catch(IllegalArgumentException | NullPointerException err) {
+			return new ResponseEntity<>("Cannot process ID " + err.getMessage()
+			.substring(0, 1).toLowerCase() + err.getMessage()
+			.substring(1, err.getMessage().length()), HttpStatus.BAD_REQUEST);
+
 		} catch(UserNotFoundException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
 
 	@DeleteMapping("{userId}")
-	public ResponseEntity<Object> delete(@PathVariable Integer userId) {
+	public ResponseEntity<Object> delete(@PathVariable Integer userId)
+	throws ConnectException, SQLException  {
+
 		try {
 			userService.delete(userId);
 			return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 
-		} catch(SQLException err) {
-			return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
+		} catch(IllegalArgumentException | NullPointerException err) {
+			return new ResponseEntity<>(err.getMessage(), HttpStatus.BAD_REQUEST);
 		} catch(UserNotFoundException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
 		}
 	}
 
+	@ExceptionHandler(ConnectException.class)
+	public ResponseEntity<Object> invalidConnection() {
+		return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
+	}
+
 	@ExceptionHandler(HttpMessageNotReadableException.class)
-	public ResponseEntity<Object> invalidRequestContent() {
+	public ResponseEntity<Object> invalidMessage() {
 		return new ResponseEntity<>("Invalid Message Content!", HttpStatus.BAD_REQUEST);
+	}
+
+	@ExceptionHandler(SQLException.class)
+	public ResponseEntity<Object> invalidSQL() {
+		return new ResponseEntity<>(null, HttpStatus.SERVICE_UNAVAILABLE);
 	}
 }
