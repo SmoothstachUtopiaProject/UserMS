@@ -1,10 +1,12 @@
 package com.ss.utopia.service;
 
+import java.sql.SQLException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ss.utopia.exception.UserRoleNotFoundException;
 import com.ss.utopia.model.UserRole;
 import com.ss.utopia.repository.UserRoleRepository;
 
@@ -20,8 +22,9 @@ public class UserRoleService {
 	@Autowired
 	UserRoleRepository userRoleRepository;
 
-	public UserRole findUserRoleById(Integer id) {
-		Optional<UserRole> userRole = userRoleRepository.findById(id);
-		return userRole.isPresent() ?  userRole.get() : null;
+	public UserRole findById(Integer id) throws SQLException, UserRoleNotFoundException {
+		Optional<UserRole> optionalUserRole = userRoleRepository.findById(id);
+		if(!optionalUserRole.isPresent()) throw new UserRoleNotFoundException("No UserRole with ID: " + id + " exist!");
+		return optionalUserRole.get();
 	}
 }

@@ -1,12 +1,11 @@
 package com.ss.utopia.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.ss.utopia.model.User;
 
@@ -14,18 +13,8 @@ import com.ss.utopia.model.User;
 public interface UserRepository extends JpaRepository<User, Integer> {
 	
 	@Query(value="SELECT * FROM user WHERE role_id = ?1", nativeQuery=true)
-	List<User> findAllByRoleId(int id);
-	
-	@Query(value="SELECT * FROM user WHERE role_id = ?1 AND id = ?2", nativeQuery=true)
-	User findByRoleIdAndUserId(Integer roleId , Integer userId);
+	List<User> findByRoleId(Integer id);
 	
 	@Query(value="SELECT * FROM user WHERE email = ?1", nativeQuery=true)
-	User findByEmail(String email);
-	
-	@Modifying
-	@Transactional 
-	@Query(value="DELETE FROM user WHERE id = ?1", nativeQuery=true)
-	void deleteByUserId(Integer id);
-	
-	
+	Optional<User> findByEmail(String email);
 }

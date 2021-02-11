@@ -8,6 +8,7 @@ class UtopiaUserApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// empty
 	}
 
 }
