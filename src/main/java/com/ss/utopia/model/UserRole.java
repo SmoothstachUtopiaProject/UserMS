@@ -8,25 +8,26 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "user_role")
 public class UserRole {
+	
 	@Id
 	@Column(name = "id")
-	private int id;
+	private Integer id;
 	
 	@Column(name = "name")
 	private String name;
 	
 	public UserRole() {}
-	public UserRole(int id, String name) {
+	public UserRole(Integer id, String name) {
 		super();
 		this.id = id;
 		this.name = name;
 	}
 
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 

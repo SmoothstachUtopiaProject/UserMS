@@ -1,15 +1,11 @@
 package com.ss.utopia.model;
 
-import java.util.List;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -20,7 +16,7 @@ public class User {
 
 	@Id
 	@Column(name = "id")
-	private int id;
+	private Integer id;
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "role_id")
 	private UserRole userRole;
@@ -35,19 +31,10 @@ public class User {
 	@Column(name = "phone")
 	private String phone;
 	
-//	@OneToMany
-//	@JoinTable(name = "booking_user", joinColumns = { @JoinColumn(name = "user_id") }, inverseJoinColumns = {
-//			@JoinColumn(name = "booking_id") })
-//    private List<Booking> bookings;
 	
-	
-	public User() {
-	}
-	
-	
-
-	public User(int id, UserRole userRole, String firstName, String lastName, String email, String password,
-			String phone) {
+	public User() {}
+	public User(Integer id, UserRole userRole, String firstName, 
+	String lastName, String email, String password, String phone) {
 		super();
 		this.id = id;
 		this.userRole = userRole;
@@ -57,9 +44,9 @@ public class User {
 		this.password = password;
 		this.phone = phone;
 	}
-	
-	public User(UserRole userRole, String firstName, String lastName, String email, String password,
-			String phone) {
+
+	public User(UserRole userRole, String firstName, 
+	String lastName, String email, String password, String phone) {
 		super();
 		this.userRole = userRole;
 		this.firstName = firstName;
@@ -69,13 +56,11 @@ public class User {
 		this.phone = phone;
 	}
 
-
-
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -125,7 +110,5 @@ public class User {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
-	};
-
+	}
 }
-
