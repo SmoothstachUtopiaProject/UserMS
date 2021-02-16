@@ -91,10 +91,16 @@ public class UserService {
 		if(!validatePhone(formattedPhone)) throw new IllegalArgumentException("The phone number: \"" + phone + "\" is not valid!");
 
 		try {
-			Optional<User> optionalUser = userRepository.findByEmail(formattedEmail);
-			if(optionalUser.isPresent()) throw new UserAlreadyExistsException("A user with this email already exists!");
+			Optional<User> optionalUser1 = userRepository.findByEmail(formattedEmail);
+			Optional<User> optionalUser2 = userRepository.findByPhone(formattedPhone);
+			
+			if(optionalUser1.isPresent() || optionalUser2.isPresent()) {
+				throw new UserAlreadyExistsException("A user with this email already exists!");
+			}
+			
 			UserRole userRole = userRoleService.findById(userRoleId);
 			return userRepository.save(new User(userRole, formattedFirstName, formattedLastName, formattedEmail, password, formattedPhone));
+		
 		} catch(UserRoleNotFoundException err) {
 			throw new IllegalArgumentException(err.getMessage());
 		}		
@@ -127,13 +133,8 @@ public class UserService {
 
 	public void delete(Integer id) throws ConnectException, IllegalArgumentException, 
 	UserNotFoundException, SQLException {
-
-		try {
-			findById(id);
-			userRepository.deleteById(id);
-		} catch(IllegalArgumentException err) {
-			throw new UserNotFoundException("No user with ID: \"" + id + "\" exist!");
-		}
+		findById(id);
+		userRepository.deleteById(id);
 	}
 
 	private String formatGeneric(String name) {

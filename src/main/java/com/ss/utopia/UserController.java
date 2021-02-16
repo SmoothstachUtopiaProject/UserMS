@@ -133,8 +133,10 @@ public class UserController {
 
 		} catch(ArrayIndexOutOfBoundsException | JsonProcessingException | NullPointerException err) {
 			return new ResponseEntity<>("Invalid User formatting!", HttpStatus.BAD_REQUEST);
+			
 		} catch(IllegalArgumentException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.BAD_REQUEST);
+
 		} catch(UserAlreadyExistsException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.CONFLICT);
 		}
@@ -155,6 +157,7 @@ public class UserController {
 
 		} catch(ArrayIndexOutOfBoundsException | JsonProcessingException  err) {
 			return new ResponseEntity<>("Invalid User formatting!", HttpStatus.BAD_REQUEST);
+
 		} catch(IllegalArgumentException | NullPointerException err) {
 			return new ResponseEntity<>("Cannot process ID " + err.getMessage()
 			.substring(0, 1).toLowerCase() + err.getMessage()
