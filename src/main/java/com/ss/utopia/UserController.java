@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,7 @@ import com.ss.utopia.service.UserRoleService;
 import com.ss.utopia.service.UserService;
 
 @RestController
+@CrossOrigin()
 @RequestMapping(value = "/users")
 public class UserController {
 
@@ -125,7 +127,7 @@ public class UserController {
 
 		try {
 			User user = new ObjectMapper().readValue(body, User.class);
-			Integer userRole = Integer.parseInt(body.replaceAll("[^a-zA-Z0-9,]", "").split("userRoleid")[1].split(",")[0]);
+			Integer userRole = 1;
 			
 			User newUser = userService.insert(userRole, user.getFirstName(), 
 			user.getLastName(), user.getEmail(), user.getPassword(), user.getPhone());
