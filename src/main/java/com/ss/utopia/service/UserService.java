@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ss.utopia.exception.IncorrectPasswordException;
 import com.ss.utopia.exception.UserAlreadyExistsException;
 import com.ss.utopia.exception.UserNotFoundException;
 import com.ss.utopia.exception.UserRoleNotFoundException;
@@ -28,6 +29,18 @@ public class UserService {
 
 	public List<User> findAll() throws ConnectException, SQLException {
 		return userRepository.findAll();
+	}
+	
+	public User verifyUser(String email, String password) throws UserNotFoundException, IncorrectPasswordException {
+		System.out.println("test");
+		Optional<User> checkUser = userRepository.findByEmail(email);
+		
+		if(!checkUser.isPresent()) {
+			throw new UserNotFoundException("Invalid Email");
+		} else if(!checkUser.get().getPassword().equals(password)) {
+			throw new IncorrectPasswordException("Invalid password");
+		} else return checkUser.get();
+		
 	}
 
 	public User findByEmail(String email) throws ConnectException, 

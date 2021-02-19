@@ -13,11 +13,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.utopia.UserController;
+import com.ss.utopia.exception.IncorrectPasswordException;
 import com.ss.utopia.exception.UserAlreadyExistsException;
 import com.ss.utopia.exception.UserNotFoundException;
 import com.ss.utopia.model.User;
@@ -361,7 +364,7 @@ public class UserControllerTest {
       fail();
     }
   }
-
+  
   @Test
   void test_insert_withValidUser_thenStatus201() {    
     try {

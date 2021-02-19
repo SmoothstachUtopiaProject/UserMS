@@ -2,6 +2,7 @@ package com.ss.utopia;
 
 import java.net.ConnectException;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ss.utopia.exception.IncorrectPasswordException;
 import com.ss.utopia.exception.UserAlreadyExistsException;
 import com.ss.utopia.exception.UserNotFoundException;
 import com.ss.utopia.exception.UserRoleNotFoundException;
@@ -47,6 +49,23 @@ public class UserController {
 		? new ResponseEntity<>(userList, HttpStatus.OK)
 		: new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
+	
+	
+	@PostMapping("/login")
+	public ResponseEntity<?> login(@RequestBody LinkedHashMap uMap) {
+		String email = (String) uMap.get("email");
+		String password = (String) uMap.get("password");
+		
+		try {
+			return new ResponseEntity<>(userService.verifyUser(email, password), HttpStatus.OK);
+		} catch (UserNotFoundException err) {
+			return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
+		}catch (IncorrectPasswordException err) {
+			return new ResponseEntity<>(err.getMessage(), HttpStatus.UNAUTHORIZED);
+		}
+		
+	}
+	
 
 	@GetMapping("{path}")
 	public ResponseEntity<Object> findById(@PathVariable String path)
