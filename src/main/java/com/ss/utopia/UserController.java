@@ -62,19 +62,32 @@ public class UserController {
 		? new ResponseEntity<>(userList, HttpStatus.OK)
 		: new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
+
 	
-	
-	cd 
+	@PostMapping("/forgot-password")
 	public ResponseEntity<?> forgotPassword(@RequestBody LinkedHashMap uMap ) throws ConnectException, IllegalArgumentException, SQLException, UserNotFoundException{
-		
 		String email = (String) uMap.get("email");
 
 		try {
 			userService.sendRecoveryEmail(email);
-			return new ResponseEntity<>("ok", HttpStatus.OK);	
+			return new ResponseEntity<>(null, HttpStatus.OK);	
 		} catch (UserNotFoundException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
 		}	
+	}
+	
+	
+	@PostMapping("/forgot-password/verify-token")
+	public ResponseEntity<?> verifyToken(@RequestBody LinkedHashMap uMap ) {
+		
+		String recoveryCode = (String) uMap.get("recoveryCode");
+		try {
+			userService.verifyToken(recoveryCode);
+			return new ResponseEntity<>(HttpStatus.OK);	
+		} catch (ExpiredTokenExpception | TokenNotFoundExpection e) {
+			return new ResponseEntity<>("Link is expired, please request a new one", HttpStatus.NOT_FOUND);
+		}
+	
 	}
 	
 	@PostMapping("/forgot-password/recover")

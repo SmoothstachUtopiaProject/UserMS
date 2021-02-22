@@ -31,7 +31,6 @@ public class UserToken {
 	public UserToken() {}
 
 	public UserToken(User user) {
-		super();
 		this.token = UUID.randomUUID().toString();
 		this.user = user;
 		this.date = new Date();
