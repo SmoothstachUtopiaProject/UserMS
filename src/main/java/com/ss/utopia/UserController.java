@@ -14,8 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -43,6 +42,7 @@ import com.ss.utopia.service.UserRoleService;
 import com.ss.utopia.service.UserService;
 
 @RestController
+@CrossOrigin()
 @RequestMapping(value = "/users")
 @CrossOrigin
 public class UserController {

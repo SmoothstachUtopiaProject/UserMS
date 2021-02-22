@@ -17,17 +17,28 @@ public class User {
 	@GeneratedValue
 	@Column(name = "id")
 	private Integer id;
+	
 	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "role_id")
 	private UserRole userRole;
+	
+	
 	@Column(name = "first_name")
 	private String firstName;
+	
+	
 	@Column(name = "last_name")
 	private String lastName;
+	
+	
 	@Column(name = "email")
 	private String email;
+	
+	
 	@Column(name = "password")
 	private String password;
+	
+	
 	@Column(name = "phone")
 	private String phone;
 	
