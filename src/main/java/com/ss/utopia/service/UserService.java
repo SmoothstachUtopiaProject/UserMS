@@ -213,7 +213,7 @@ public class UserService {
 		String formattedPhone = formatPhone(phone);
 
 		if(!validateName(formattedFirstName)) throw new IllegalArgumentException("A name cannot exceed 255 characters!");
-		if(!validateName(formattedLastName)) throw new IllegalArgumentException("A name cannot exceed 255 characters!");
+		if(!validateName(formattedLastName)) throw new IllegalArgumentException("A last name cannot exceed 255 characters!");
 		if(!validateEmail(formattedEmail)) throw new IllegalArgumentException("The email: " + email + " is not valid!");
 		if(!validatePassword(password)) throw new IllegalArgumentException("A password cannot exceed 255 characters!");
 		if(!validatePhone(formattedPhone)) throw new IllegalArgumentException("The phone number: " + phone + " is not valid!");
