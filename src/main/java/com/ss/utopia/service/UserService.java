@@ -2,21 +2,34 @@ package com.ss.utopia.service;
 
 import java.net.ConnectException;
 import java.sql.SQLException;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.time.DateUtils;
+import org.bouncycastle.asn1.dvcs.Data;
+import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ss.utopia.email.model.MailRequest;
+import com.ss.utopia.email.model.MailResponse;
+import com.ss.utopia.email.service.EmailService;
+import com.ss.utopia.exception.ExpiredTokenExpception;
 import com.ss.utopia.exception.IncorrectPasswordException;
+import com.ss.utopia.exception.TokenNotFoundExpection;
 import com.ss.utopia.exception.UserAlreadyExistsException;
 import com.ss.utopia.exception.UserNotFoundException;
 import com.ss.utopia.exception.UserRoleNotFoundException;
 import com.ss.utopia.model.User;
 import com.ss.utopia.model.UserRole;
+import com.ss.utopia.model.UserToken;
 import com.ss.utopia.repository.UserRepository;
+import com.ss.utopia.repository.UserTokenRepository;
 
 @Service
 public class UserService {
@@ -26,9 +39,76 @@ public class UserService {
 
 	@Autowired
 	UserRoleService userRoleService;
+	
+	@Autowired
+	UserTokenRepository userTokenRepository;
+	
+	@Autowired
+	EmailService emailService;
 
 	public List<User> findAll() throws ConnectException, SQLException {
 		return userRepository.findAll();
+	}
+	
+	public MailResponse sendRecoveryEmail(String email) throws ConnectException, IllegalArgumentException, SQLException, UserNotFoundException {
+		
+		User user = findByEmail(email);
+		UserToken userToken = new UserToken(user);
+		userTokenRepository.save(userToken);
+		return sendEmail(user, userToken);
+		
+	}
+	
+	public void ChangePassword(UserToken userToken, String password) throws ConnectException, IllegalArgumentException, SQLException, UserNotFoundException {
+		User user = findById(userToken.getUser().getId());
+		user.setPassword(password);
+		userRepository.save(user);
+	}
+	
+	// verify if token is exists and if not expired. 
+	public UserToken verifyToken(String token) throws ExpiredTokenExpception, TokenNotFoundExpection {
+		
+		UserToken uToken = null;
+		Optional<UserToken> userToken = userTokenRepository.findById(token);
+		if(userToken.isPresent()) {
+			uToken = userToken.get();
+		}
+		if(!userToken.isPresent()) {
+			throw new TokenNotFoundExpection("Unexpected error occured");
+		}
+		//date when token was issued
+		Date tokenDate = uToken.getDate();
+		// +15 minutes to determine id token is expired 
+		tokenDate = DateUtils.addMinutes(tokenDate, 15);
+		// current dateTime
+		Date dateNow = new Date();
+		// if current date is after token's expiration date 
+		if(dateNow.after(tokenDate)) {
+			throw new ExpiredTokenExpception("Link is expired");
+		}
+		
+		return uToken;
+		
+		
+		
+		
+		
+		
+	}
+	
+	
+	public MailResponse sendEmail(User user, UserToken userToken) {
+		Map<String, Object> modelsMap = new HashMap<>();
+		
+		String recoveryCode = userToken.getToken();
+		String userName = user.getFirstName();
+		
+		modelsMap.put("name", userName);
+		modelsMap.put("confirmation", recoveryCode);
+		
+		MailRequest mailRequest = new MailRequest(user.getEmail());
+		return emailService.sendEmail(mailRequest, modelsMap);
+		
 	}
 	
 	public User verifyUser(String email, String password) throws UserNotFoundException, IncorrectPasswordException {
@@ -107,10 +187,13 @@ public class UserService {
 			Optional<User> optionalUser1 = userRepository.findByEmail(formattedEmail);
 			Optional<User> optionalUser2 = userRepository.findByPhone(formattedPhone);
 			
-			if(optionalUser1.isPresent() || optionalUser2.isPresent()) {
+			if(optionalUser1.isPresent()) {
 				throw new UserAlreadyExistsException("A user with this email already exists!");
 			}
 			
+			if( optionalUser2.isPresent()) {
+				throw new UserAlreadyExistsException("A user with this phone number already exists!");
+			}
 			UserRole userRole = userRoleService.findById(userRoleId);
 			return userRepository.save(new User(userRole, formattedFirstName, formattedLastName, formattedEmail, password, formattedPhone));
 		

@@ -31,7 +31,6 @@ public class User {
 	@Column(name = "phone")
 	private String phone;
 	
-	
 	public User() {}
 	public User(Integer id, UserRole userRole, String firstName, 
 	String lastName, String email, String password, String phone) {
