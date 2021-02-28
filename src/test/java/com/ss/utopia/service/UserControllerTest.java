@@ -20,11 +20,12 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ss.utopia.UserController;
-import com.ss.utopia.exception.IncorrectPasswordException;
-import com.ss.utopia.exception.UserAlreadyExistsException;
-import com.ss.utopia.exception.UserNotFoundException;
-import com.ss.utopia.model.User;
-import com.ss.utopia.model.UserRole;
+import com.ss.utopia.exceptions.IncorrectPasswordException;
+import com.ss.utopia.exceptions.UserAlreadyExistsException;
+import com.ss.utopia.exceptions.UserNotFoundException;
+import com.ss.utopia.models.User;
+import com.ss.utopia.models.UserRole;
+import com.ss.utopia.services.UserService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

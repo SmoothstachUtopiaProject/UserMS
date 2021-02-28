@@ -1,4 +1,4 @@
-package com.ss.utopia.email.service;
+package com.ss.utopia.email.services;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -14,13 +14,12 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
-import com.ss.utopia.email.model.MailRequest;
-import com.ss.utopia.email.model.MailResponse;
+import com.ss.utopia.email.models.MailRequest;
+import com.ss.utopia.email.models.MailResponse;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-
 @Service
 public class EmailService {
 	

@@ -1,4 +1,4 @@
-package com.ss.utopia.service;
+package com.ss.utopia.services;
 
 import java.net.ConnectException;
 import java.sql.SQLException;
@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,20 +17,22 @@ import org.joda.time.Interval;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ss.utopia.email.model.MailRequest;
-import com.ss.utopia.email.model.MailResponse;
-import com.ss.utopia.email.service.EmailService;
-import com.ss.utopia.exception.ExpiredTokenExpception;
-import com.ss.utopia.exception.IncorrectPasswordException;
-import com.ss.utopia.exception.TokenNotFoundExpection;
-import com.ss.utopia.exception.UserAlreadyExistsException;
-import com.ss.utopia.exception.UserNotFoundException;
-import com.ss.utopia.exception.UserRoleNotFoundException;
-import com.ss.utopia.model.User;
-import com.ss.utopia.model.UserRole;
-import com.ss.utopia.model.UserToken;
-import com.ss.utopia.repository.UserRepository;
-import com.ss.utopia.repository.UserTokenRepository;
+import com.ss.utopia.email.models.MailRequest;
+import com.ss.utopia.email.models.MailResponse;
+import com.ss.utopia.email.services.EmailService;
+import com.ss.utopia.exceptions.ExpiredTokenExpception;
+import com.ss.utopia.exceptions.IncorrectPasswordException;
+import com.ss.utopia.exceptions.PasswordNotAllowedException;
+import com.ss.utopia.exceptions.TokenAlreadyIssuedException;
+import com.ss.utopia.exceptions.TokenNotFoundExpection;
+import com.ss.utopia.exceptions.UserAlreadyExistsException;
+import com.ss.utopia.exceptions.UserNotFoundException;
+import com.ss.utopia.exceptions.UserRoleNotFoundException;
+import com.ss.utopia.models.User;
+import com.ss.utopia.models.UserRole;
+import com.ss.utopia.models.UserToken;
+import com.ss.utopia.repositories.UserRepository;
+import com.ss.utopia.repositories.UserTokenRepository;
 
 @Service
 public class UserService {
@@ -44,58 +47,36 @@ public class UserService {
 	UserTokenRepository userTokenRepository;
 	
 	@Autowired
+	UserTokenService userTokenService;
+	
+	@Autowired
 	EmailService emailService;
 
 	public List<User> findAll() throws ConnectException, SQLException {
 		return userRepository.findAll();
 	}
 	
-	public MailResponse sendRecoveryEmail(String email) throws ConnectException, IllegalArgumentException, SQLException, UserNotFoundException {
+	public MailResponse sendRecoveryEmail(String email) throws ConnectException, IllegalArgumentException, SQLException, UserNotFoundException, TokenAlreadyIssuedException {
 		
 		User user = findByEmail(email);
+		// getting current date and subtracting 15 minutes to check if token already issued
+		Date currentDateTimeMinuts15Minutes = new Date(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(15));
+		boolean userTokens = userTokenService.verifyIfTokenBeenIssuedin15Min(user.getId(), currentDateTimeMinuts15Minutes);
+		if(!userTokens) throw new TokenAlreadyIssuedException("You can only request a link once every 15 minutes!");
+		
+		// if token has't been issued in the last 15 minutes, issue a token and send an email to user. 
 		UserToken userToken = new UserToken(user);
 		userTokenRepository.save(userToken);
 		return sendEmail(user, userToken);
 		
 	}
 	
-	public void ChangePassword(UserToken userToken, String password) throws ConnectException, IllegalArgumentException, SQLException, UserNotFoundException {
+	public void ChangePassword(UserToken userToken, String password) throws ConnectException, IllegalArgumentException, SQLException, UserNotFoundException, PasswordNotAllowedException {
 		User user = findById(userToken.getUser().getId());
+		if(user.getPassword().equals(password)) throw new PasswordNotAllowedException("Previously used password not allowed");
 		user.setPassword(password);
 		userRepository.save(user);
 	}
-	
-	// verify if token is exists and if not expired. 
-	public UserToken verifyToken(String token) throws ExpiredTokenExpception, TokenNotFoundExpection {
-		
-		UserToken uToken = null;
-		Optional<UserToken> userToken = userTokenRepository.findById(token);
-		if(userToken.isPresent()) {
-			uToken = userToken.get();
-		}
-		if(!userToken.isPresent()) {
-			throw new TokenNotFoundExpection("Unexpected error occured");
-		}
-		//date when token was issued
-		Date tokenDate = uToken.getDate();
-		// +15 minutes to determine id token is expired 
-		tokenDate = DateUtils.addMinutes(tokenDate, 15);
-		// current dateTime
-		Date dateNow = new Date();
-		// if current date is after token's expiration date 
-		if(dateNow.after(tokenDate)) {
-			throw new ExpiredTokenExpception("Link is expired");
-		}
-		
-		return uToken;
-		
-		
-		
-		
-		
-		
-	}
-	
 	
 	public MailResponse sendEmail(User user, UserToken userToken) {
 		Map<String, Object> modelsMap = new HashMap<>();

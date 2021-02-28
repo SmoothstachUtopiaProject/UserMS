@@ -3,14 +3,12 @@ package com.ss.utopia;
 import java.io.Console;
 import java.net.ConnectException;
 import java.sql.SQLException;
-import java.util.Date;
+
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.UUID;
 
-import org.h2.tools.Recover;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -29,26 +27,30 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ss.utopia.email.model.MailResponse;
-import com.ss.utopia.exception.ExpiredTokenExpception;
-import com.ss.utopia.exception.IncorrectPasswordException;
-import com.ss.utopia.exception.TokenNotFoundExpection;
-import com.ss.utopia.exception.UserAlreadyExistsException;
-import com.ss.utopia.exception.UserNotFoundException;
-import com.ss.utopia.exception.UserRoleNotFoundException;
-import com.ss.utopia.model.User;
-import com.ss.utopia.model.UserToken;
-import com.ss.utopia.service.UserRoleService;
-import com.ss.utopia.service.UserService;
+import com.ss.utopia.exceptions.ExpiredTokenExpception;
+import com.ss.utopia.exceptions.IncorrectPasswordException;
+import com.ss.utopia.exceptions.PasswordNotAllowedException;
+import com.ss.utopia.exceptions.TokenAlreadyIssuedException;
+import com.ss.utopia.exceptions.TokenNotFoundExpection;
+import com.ss.utopia.exceptions.UserAlreadyExistsException;
+import com.ss.utopia.exceptions.UserNotFoundException;
+import com.ss.utopia.exceptions.UserRoleNotFoundException;
+import com.ss.utopia.models.User;
+import com.ss.utopia.services.UserRoleService;
+import com.ss.utopia.services.UserService;
+import com.ss.utopia.services.UserTokenService;
 
 @RestController
 @CrossOrigin()
 @RequestMapping(value = "/users")
-@CrossOrigin
 public class UserController {
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	UserTokenService userTokenService;
+
 
 	@Autowired
 	UserRoleService userRoleService;
@@ -65,24 +67,24 @@ public class UserController {
 
 	
 	@PostMapping("/forgot-password")
-	public ResponseEntity<?> forgotPassword(@RequestBody LinkedHashMap uMap ) throws ConnectException, IllegalArgumentException, SQLException, UserNotFoundException{
+	public ResponseEntity<?> forgotPassword(@RequestBody LinkedHashMap uMap ) throws ConnectException, IllegalArgumentException, SQLException{
 		String email = (String) uMap.get("email");
-
 		try {
 			userService.sendRecoveryEmail(email);
 			return new ResponseEntity<>(null, HttpStatus.OK);	
 		} catch (UserNotFoundException err) {
 			return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (TokenAlreadyIssuedException err) {
+			return new ResponseEntity<>(err.getMessage(), HttpStatus.CONFLICT);
 		}	
 	}
-	
-	
+
 	@PostMapping("/forgot-password/verify-token")
 	public ResponseEntity<?> verifyToken(@RequestBody LinkedHashMap uMap ) {
 		
 		String recoveryCode = (String) uMap.get("recoveryCode");
 		try {
-			userService.verifyToken(recoveryCode);
+			userTokenService.verifyToken(recoveryCode);
 			return new ResponseEntity<>(HttpStatus.OK);	
 		} catch (ExpiredTokenExpception | TokenNotFoundExpection e) {
 			return new ResponseEntity<>("Link is expired, please request a new one", HttpStatus.NOT_FOUND);
@@ -91,21 +93,20 @@ public class UserController {
 	}
 	
 	@PostMapping("/forgot-password/recover")
-	public ResponseEntity<?> passwordRecovery(@RequestBody LinkedHashMap uMap) throws ExpiredTokenExpception, TokenNotFoundExpection, ConnectException, IllegalArgumentException, SQLException, UserNotFoundException  {
+	public ResponseEntity<?> passwordRecovery(@RequestBody LinkedHashMap uMap) throws ConnectException, IllegalArgumentException, SQLException   {
 		
 		String recoveryCode = (String) uMap.get("recoveryCode");
 		String password = (String) uMap.get("password");
 		
 		try {
-			userService.verifyToken(recoveryCode);
-			userService.ChangePassword(userService.verifyToken(recoveryCode), password);
+			userService.ChangePassword(userTokenService.verifyToken(recoveryCode), password);
+			userTokenService.delete(recoveryCode);
 			return new ResponseEntity<>("Password successfully changed ", HttpStatus.OK);
 			
-		} catch (ExpiredTokenExpception e) {
+		} catch (ExpiredTokenExpception | TokenNotFoundExpection | UserNotFoundException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
-		} 
-		catch (Exception e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+		} catch (PasswordNotAllowedException e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
 		} 
 	}
 	
@@ -199,8 +200,6 @@ public class UserController {
 	public ResponseEntity<Object> insert(@RequestBody String body)
 	throws ConnectException, SQLException {
 		
-		System.out.println(body);
-
 		try {
 			User user = new ObjectMapper().readValue(body, User.class);
 			Integer userRole = 1;

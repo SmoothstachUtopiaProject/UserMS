@@ -1,4 +1,4 @@
-package com.ss.utopia.service;
+package com.ss.utopia.services;
 
 import java.sql.SQLException;
 import java.util.Optional;
@@ -6,9 +6,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ss.utopia.exception.UserRoleNotFoundException;
-import com.ss.utopia.model.UserRole;
-import com.ss.utopia.repository.UserRoleRepository;
+import com.ss.utopia.exceptions.UserRoleNotFoundException;
+import com.ss.utopia.models.UserRole;
+import com.ss.utopia.repositories.UserRoleRepository;
 
 /*
  * This service class of UserRole serves as an intermediate layer between the DAO layer and the controller layer.

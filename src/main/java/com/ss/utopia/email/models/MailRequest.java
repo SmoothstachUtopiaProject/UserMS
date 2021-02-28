@@ -1,4 +1,4 @@
-package com.ss.utopia.email.model;
+package com.ss.utopia.email.models;
 
 
 import javax.validation.constraints.Email;

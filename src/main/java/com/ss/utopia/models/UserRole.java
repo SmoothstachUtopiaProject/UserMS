@@ -1,4 +1,4 @@
-package com.ss.utopia.model;
+package com.ss.utopia.models;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

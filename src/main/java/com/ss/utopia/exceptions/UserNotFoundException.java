@@ -1,4 +1,4 @@
-package com.ss.utopia.exception;
+package com.ss.utopia.exceptions;
 
 public class UserNotFoundException extends Exception {
 

@@ -1,4 +1,4 @@
-package com.ss.utopia.exception;
+package com.ss.utopia.exceptions;
 
 public class UserRoleAlreadyExistsException extends Exception {
   private static final long serialVersionUID = 1L;
