@@ -1,16 +1,9 @@
 package com.ss.utopia.email.models;
 
-
-import javax.validation.constraints.Email;
-
-
-
 public class MailRequest {
-	
+
 	private String name;
-	@Email(message = "Email should be valid")
 	private String to;
-	@Email(message = "Email should be valid")
 	private String from;
 	private String subject;
 	
