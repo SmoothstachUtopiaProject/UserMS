@@ -15,8 +15,8 @@ pipeline {
                 echo 'Deploying....'
                 sh "aws ecr get-login-password --region us-east-1 --profile=default | docker login --username AWS --password-stdin 466486113081.dkr.ecr.us-east-1.amazonaws.com"                
                 sh "docker build -t utopiauserms ."
-                sh "docker tag utopiauserms:latest 466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/utopiauserms"
-                sh "docker push 466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/utopiauserms"
+                sh "docker tag utopiauserms:latest 466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/userms"
+                sh "docker push 466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/userms"
             }
         }
         // stage('Deploy') {
