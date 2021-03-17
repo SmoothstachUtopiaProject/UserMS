@@ -157,48 +157,6 @@ public class UserService {
 		return optionalUser.get();
 	}
 
-	// public List<User> findByRoleId(Integer userRoleId) throws ConnectException,
-	// IllegalArgumentException, SQLException, UserRoleNotFoundException {
-	//
-	// UserRole role = userRoleService.findById(userRoleId);
-	// return userRepository.findByRoleId(role.getId());
-	// }
-	//
-	// public List<User> findByRoleName(String userRoleName) throws
-	// ConnectException,
-	// IllegalArgumentException, SQLException, UserRoleNotFoundException {
-	//
-	// UserRole role = userRoleService.findByName(userRoleName);
-	// return userRepository.findByRoleId(role.getId());
-	// }
-
-	// public User insert(Role userRole, String firstName,
-	// String lastName, String email, String password, String phone)
-	// throws ConnectException, IllegalArgumentException, SQLException,
-	// UserAlreadyExistsException, UserRoleNotFoundException {
-	//
-	// String formattedFirstName = formatGeneric(firstName);
-	// String formattedLastName = formatGeneric(lastName);
-	// String formattedEmail = formatGeneric(email);
-	// String formattedPhone = formatPhone(phone);
-	//
-	// Optional<User> optionalUser1 = userRepository.findByEmail(formattedEmail);
-	// Optional<User> optionalUser2 = userRepository.findByPhone(formattedPhone);
-	//
-	// if(optionalUser1.isPresent()) {
-	// throw new UserAlreadyExistsException("A user with this email already
-	// exists!");
-	// }
-	//
-	// if( optionalUser2.isPresent()) {
-	// throw new UserAlreadyExistsException("A user with this phone number already
-	// exists!");
-	// }
-	// return userRepository.save(new User(userRole, formattedFirstName,
-	// formattedLastName, formattedEmail, passwordEncoder.encode(password),
-	// formattedPhone ));
-	// }
-
 	public User update(Integer id, User user)
 			throws ConnectException, IllegalArgumentException, SQLException, UserNotFoundException {
 		User u = findById(id);
