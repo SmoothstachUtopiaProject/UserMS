@@ -169,28 +169,6 @@ public class UserController {
 		}
 	}
 
-	// @GetMapping("/search")
-	// public ResponseEntity<Object> findByRole(@RequestParam String role)
-	// throws ConnectException, SQLException {
-	//
-	// try{
-	// List<User> userList = role.replaceAll("[^0-9-]", "").length() ==
-	// role.length()
-	// ? userService.findByRoleId(Integer.parseInt(role))
-	// : userService.findByRoleName(role);
-	// return !userList.isEmpty()
-	// ? new ResponseEntity<>(userList, HttpStatus.OK)
-	// : new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-	//
-	// } catch(IllegalArgumentException | NullPointerException err) {
-	// return new ResponseEntity<>("Cannot process Role " + err.getMessage()
-	// .substring(0, 1).toLowerCase() + err.getMessage()
-	// .substring(1, err.getMessage().length()), HttpStatus.BAD_REQUEST);
-	//
-	// } catch(UserRoleNotFoundException err) {
-	// return new ResponseEntity<>(err.getMessage(), HttpStatus.NOT_FOUND);
-	// }
-	// }
 
 	@DeleteMapping("{userId}")
 	public ResponseEntity<Object> delete(@PathVariable Integer userId) throws ConnectException, SQLException {
