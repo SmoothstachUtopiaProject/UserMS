@@ -1,5 +1,8 @@
 pipeline {
     agent any
+    environment {
+        COMMIT_HASH="${sh(script:'git rev-parse --short HEAD', returnStdout: true).trim()}"
+    }
 
     stages {
         stage('Package') {
@@ -14,17 +17,23 @@ pipeline {
             steps {
                 echo 'Deploying....'
                 sh "aws ecr get-login-password --region us-east-1 --profile=default | docker login --username AWS --password-stdin 466486113081.dkr.ecr.us-east-1.amazonaws.com"                
-                sh "docker build -t utopiauserms ."
-                sh "docker tag utopiauserms:latest 466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/userms"
-                sh "docker push 466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/userms"
+                sh "docker build --tag utopiauserms:$COMMIT_HASH ."
+                sh "docker tag utopiauserms:$COMMIT_HASH 466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/userms:$COMMIT_HASH"
+                sh "docker push 466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/userms:$COMMIT_HASH"
             }
         }
-        // stage('Deploy') {
-        //    steps {
-        //        sh "rm ECSService.yml"
-        //        sh "wget https://github.com/SmoothstackUtopiaProject/CloudFormationTemplates/blob/main/ECSService.yml"
-        //        sh "aws cloudformation deploy --stack-name UtopiaAirplaneMS --template-file ECSService.yml --parameter-overrides ApplicationName=UtopiaAirplaneMS DBHost=$DB_HOST DBName=$DB_NAME DBPort=$DB_PORT ECRepositoryURI=466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/airplanems:latest SecurityGroupID=$SECURITYGROUPID SubnetID=$SUBNETID"
-        //    }
-        // }
+        stage('Deploy') {
+           steps {
+               sh "touch ECSService.yml"
+               sh "rm ECSService.yml"
+               sh "wget https://raw.githubusercontent.com/SmoothstackUtopiaProject/CloudFormationTemplates/main/ECSService.yml"
+               sh "aws cloudformation deploy --stack-name UtopiaAirplaneMS --template-file ./ECSService.yml --parameter-overrides ApplicationName=UtopiaAirplaneMS ECRepositoryUri=466486113081.dkr.ecr.us-east-1.amazonaws.com/utopiaairlines/airplanems:$COMMIT_HASH DBUsername=$DB_USERNAME DBPassword=$DB_PASSWORD SubnetId=$SUBNETID SecurityGroupID=$SECURITYGROUPID --capabilities \"CAPABILITY_IAM\" \"CAPABILITY_NAMED_IAM\""
+           }
+        }
+        stage('Cleanup') {
+            steps {
+                sh "docker system prune -f"
+            }
+        }
     }
 }
