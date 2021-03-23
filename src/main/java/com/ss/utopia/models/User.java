@@ -7,8 +7,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
-// import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -46,30 +44,18 @@ public class User {
 	@Column(name = "role")
 	private Role userRole;
 
-	@Transient
-	private String userToken;
-
-	public User() {}
-	public User(Role userRole, String userFirstName, String userLastName, String userEmail, String userPassword, String userPhone) {
-
-		this.userRole = userRole;
-		this.userFirstName = userFirstName;
-		this.userLastName = userLastName;
-		this.userEmail = userEmail;
-		this.userPassword = userPassword;
-		this.userPhone = userPhone;
+	public User() {
 	}
 
-	public User(Role userRole, String userFirstName, String userLastName, String userEmail, String userPassword, String userPhone,
-			String userToken) {
-
+	public User(Integer userId, Role userRole, String userFirstName, String userLastName, String userEmail,
+			String userPassword, String userPhone) {
+		this.userId = userId;
 		this.userFirstName = userFirstName;
 		this.userLastName = userLastName;
 		this.userEmail = userEmail;
 		this.userPassword = userPassword;
 		this.userPhone = userPhone;
 		this.userRole = userRole;
-		this.userToken = userToken;
 	}
 
 	public Integer getUserId() {
@@ -128,12 +114,4 @@ public class User {
 		this.userRole = userRole;
 	}
 
-
-	public String getUserToken() {
-		return this.userToken;
-	}
-
-	public void setUserToken(String userToken) {
-		this.userToken = userToken;
-	}
 }
