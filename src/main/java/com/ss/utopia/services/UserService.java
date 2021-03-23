@@ -59,9 +59,7 @@ public class UserService {
 		return optionalUser.get();
 	}
 
-	public User update(Integer id, User user) throws UserNotFoundException {
-		User u = findById(id);
-		user.setUserRole(u.getUserRole());
+	public User update(User user) {
 		return userRepository.save(user);
 	}
 
